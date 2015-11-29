@@ -1,11 +1,16 @@
 package com.afollestad.cabinetsftp;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.Menu;
@@ -49,6 +54,22 @@ public class AuthenticationActivity extends PluginAuthenticator
     private boolean mTestedConnection;
     private Thread mThread;
     private ProgressDialogFragment mProgress;
+
+    //TODO: Activity is killed onPause
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
+            new MaterialDialog.Builder(this)
+                    .title(R.string.permission_needed)
+                    .content(R.string.permission_needed_desc)
+                    .cancelable(false)
+                    .positiveText(android.R.string.ok)
+                    .show();
+        } else {
+            browseSshKey();
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -116,13 +137,13 @@ public class AuthenticationActivity extends PluginAuthenticator
         findViewById(R.id.browseSshKey).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                File fi = null;
-                final String currentPath = sshKeyPath.getText().toString().trim();
-                if (!currentPath.isEmpty())
-                    fi = new File(currentPath).getParentFile();
-                if (fi == null)
-                    fi = Environment.getExternalStorageDirectory();
-                FileChooserDialog.show(AuthenticationActivity.this, fi);
+                if (ContextCompat.checkSelfPermission(AuthenticationActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) !=
+                        PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(AuthenticationActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 69);
+                    return;
+                }
+
+                browseSshKey();
             }
         });
 
@@ -149,6 +170,16 @@ public class AuthenticationActivity extends PluginAuthenticator
             }
             initialPath.setText(account.initialPath);
         }
+    }
+
+    private void browseSshKey() {
+        File fi = null;
+        final String currentPath = sshKeyPath.getText().toString().trim();
+        if (!currentPath.isEmpty())
+            fi = new File(currentPath).getParentFile();
+        if (fi == null)
+            fi = Environment.getExternalStorageDirectory().getAbsoluteFile();
+        FileChooserDialog.show(AuthenticationActivity.this, fi);
     }
 
     private void invalidateTestConnectionEnabled() {

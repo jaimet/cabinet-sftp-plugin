@@ -20,4 +20,7 @@
     <string name="error">Error</string>
     <string name="error_retry">Error, Retry</string>
     <string name="browse">Browse</string>
+
+    <string name="permission_needed">Permission Needed</string>
+    <string name="permission_needed_desc">Cabinet SFTP Plugin needs permission to access your phone\'s storage in order to browse for the SSH key.</string>
 </resources>

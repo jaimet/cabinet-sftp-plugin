@@ -37,7 +37,7 @@ public class FileChooserDialog extends DialogFragment implements MaterialDialog.
         MaterialDialog dialog = new MaterialDialog.Builder(getActivity())
                 .title(mCurrentFolder.getAbsolutePath())
                 .autoDismiss(false)
-                .items(new CharSequence[]{".."})
+                .items("..")
                 .itemsCallback(this)
                 .build();
         if (getArguments().containsKey("contents")) {
